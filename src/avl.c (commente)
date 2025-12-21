@@ -1,0 +1,212 @@
+#include "avl.h"
+#include <string.h>
+#include <stdio.h>
+
+// Creer un noeud AVL
+
+AVLNode *avl_create_node(const char *key, void *data)
+{
+    AVLNode *node = malloc(sizeof(AVLNode));
+    if (node == NULL)
+        return NULL;
+    node->key = strdup(key);
+    if (node->key == NULL)
+    {
+        free(node);
+        return NULL;
+    }
+    node->data = data;
+    node->equilibre = 0;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
+// Fonction pour faire une rotation gauche
+
+AVLNode *rotate_left(AVLNode *a)
+{
+    AVLNode *b = a->right;
+
+    a->right = b->left;
+    b->left = a;
+
+    if (b->equilibre >= 0)
+    {
+        a->equilibre = a->equilibre - 1 - b->equilibre;
+        b->equilibre = b->equilibre - 1;
+    }
+    else
+    {
+        a->equilibre = a->equilibre - 1;
+        b->equilibre = b->equilibre - 1 + a->equilibre;
+    }
+
+    return b;
+}
+
+// Fonction pour faire une rotation droite
+
+AVLNode *rotate_right(AVLNode *a)
+{
+    AVLNode *b = a->left;
+
+    a->left = b->right;
+    b->right = a;
+
+    if (b->equilibre <= 0)
+    {
+        a->equilibre = a->equilibre + 1 - b->equilibre;
+        b->equilibre = b->equilibre + 1;
+    }
+    else
+    {
+        a->equilibre = a->equilibre + 1;
+        b->equilibre = b->equilibre + 1 + a->equilibre;
+    }
+
+    return b;
+}
+
+// Fonction pour faire une double rotation gauche
+
+AVLNode *double_rotate_left(AVLNode *a)
+{
+    a->right = rotate_right(a->right);
+    return rotate_left(a);
+}
+
+// Fonction pour faire une double rotation droite
+
+AVLNode *double_rotate_right(AVLNode *a)
+{
+    a->left = rotate_left(a->left);
+    return rotate_right(a);
+}
+
+// Rééquilibre le nœud si besoin en appliquant la rotation adaptee
+
+AVLNode *balance_avl(AVLNode *a)
+{
+    if (a->equilibre == 2)
+    {
+        if (a->right->equilibre >= 0)
+            return rotate_left(a);
+        else
+            return double_rotate_left(a);
+    }
+
+    if (a->equilibre == -2)
+    {
+        if (a->left->equilibre <= 0)
+            return rotate_right(a);
+        else
+            return double_rotate_right(a);
+    }
+
+    return a;
+}
+
+// Insertion de maniere recursive dans l'arbre AVL 
+AVLNode *avl_insert_recursive(AVLNode *a, const char *key, void *data, int *h, AVLNode **found)
+{
+    if (a == NULL)
+    {
+        *h = 1;
+        AVLNode *node = avl_create_node(key, data);
+        if (found)
+            *found = node;
+        return node;
+    }
+
+    int cmp = strcmp(key, a->key);
+    if (cmp < 0)
+    {
+        a->left = avl_insert_recursive(a->left, key, data, h, found);
+        *h = -*h;
+    }
+    else if (cmp > 0)
+    {
+        a->right = avl_insert_recursive(a->right, key, data, h, found);
+    }
+    else
+    {
+        *h = 0;
+        if (found)
+            *found = a;
+        return a;
+    }
+
+    if (*h != 0)
+    {
+        a->equilibre += *h;
+
+        if (a->equilibre == 0)
+            *h = 0;
+        else if (a->equilibre == 2 || a->equilibre == -2)
+        {
+            a = balance_avl(a);
+            *h = 0;
+        }
+        else
+        {
+            *h = 1;
+        }
+    }
+
+    return a;
+}
+
+// Insertion dans l arbre AVL
+AVLNode *avl_insert(AVLNode *root, const char *key, void *data, AVLNode **found)
+{
+    int h = 0;
+    return avl_insert_recursive(root, key, data, &h, found);
+}
+
+// Recherche d'un noeud dans l arbre AVL
+AVLNode *avl_search(AVLNode *root, const char *key)
+{
+    if (root == NULL)
+        return NULL;
+    int cmp = strcmp(key, root->key);
+    if (cmp < 0)
+        return avl_search(root->left, key);
+    if (cmp > 0)
+        return avl_search(root->right, key);
+    return root;
+}
+
+// Parcours en ordre décroissant 
+
+void avl_traverse_reverse(AVLNode *root, void (*callback)(AVLNode *, void *), void *arg)
+{
+    if (root == NULL)
+        return;
+    avl_traverse_reverse(root->right, callback, arg);
+    callback(root, arg);
+    avl_traverse_reverse(root->left, callback, arg);
+}
+
+// Libere l'arbre et les donnees de maniere recursive 
+
+void avl_free(AVLNode *root, void (*free_data)(void *))
+{
+    if (root == NULL)
+        return;
+    avl_free(root->left, free_data);
+    avl_free(root->right, free_data);
+    free(root->key);
+    if (free_data && root->data)
+        free_data(root->data);
+    free(root);
+}
+
+// Compte le nombre de noeuds dans l'arbre
+
+int avl_count(AVLNode *root)
+{
+    if (root == NULL)
+        return 0;
+    return 1 + avl_count(root->left) + avl_count(root->right);
+}
