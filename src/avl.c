@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
-AVLNode *avl_create_node(const char *key, void *data)
+AVLNode *avl_create_node(char *key, void *data)
 {
     AVLNode *node = malloc(sizeof(AVLNode));
     if (node == NULL)
@@ -95,7 +95,7 @@ AVLNode *balance_avl(AVLNode *a)
     return a;
 }
 
-AVLNode *avl_insert_recursive(AVLNode *a, const char *key, void *data, int *h, AVLNode **found)
+AVLNode *avl_insert_recursive(AVLNode *a, char *key, void *data, int *h, AVLNode **found)
 {
     if (a == NULL)
     {
@@ -144,13 +144,13 @@ AVLNode *avl_insert_recursive(AVLNode *a, const char *key, void *data, int *h, A
     return a;
 }
 
-AVLNode *avl_insert(AVLNode *root, const char *key, void *data, AVLNode **found)
+AVLNode *avl_insert(AVLNode *root, char *key, void *data, AVLNode **found)
 {
     int h = 0;
     return avl_insert_recursive(root, key, data, &h, found);
 }
 
-AVLNode *avl_search(AVLNode *root, const char *key)
+AVLNode *avl_search(AVLNode *root, char *key)
 {
     if (root == NULL)
         return NULL;

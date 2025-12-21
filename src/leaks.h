@@ -12,11 +12,11 @@ typedef struct ChildNode
 typedef struct TreeNode
 {
     char *id;
-    double leak_pct;
+    float leak_pct;
     int child_count;
     ChildNode *children;
 } TreeNode;
 
-int leaks_process(const char *input_file, const char *output_file, const char *plant_id);
+int leaks_process(char *input_file, char *output_file, char *plant_id);
 
 #endif

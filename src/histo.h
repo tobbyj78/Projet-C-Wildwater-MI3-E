@@ -6,11 +6,11 @@
 typedef struct
 {
     char *id;
-    double max_volume;
-    double source_volume;
-    double real_volume;
+    float max_volume;
+    float source_volume;
+    float real_volume;
 } PlantData;
 
-int histo_process(const char *input_file, const char *output_file, const char *mode);
+int histo_process(char *input_file, char *output_file, char *mode);
 
 #endif

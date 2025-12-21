@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-TreeNode *create_tree_node(const char *id, double leak_pct)
+TreeNode *create_tree_node(char *id, float leak_pct)
 {
     TreeNode *node = malloc(sizeof(TreeNode));
     if (node == NULL)
@@ -47,21 +47,21 @@ void free_tree(TreeNode *node)
     free(node);
 }
 
-double calculate_leaks_recursive(TreeNode *node, double incoming_volume)
+float calculate_leaks_recursive(TreeNode *node, float incoming_volume)
 {
     if (node == NULL || incoming_volume <= 0)
         return 0.0;
 
-    double leak = incoming_volume * (node->leak_pct / 100.0);
-    double remaining = incoming_volume - leak;
+    float leak = incoming_volume * (node->leak_pct / 100.0);
+    float remaining = incoming_volume - leak;
 
     if (node->child_count == 0)
     {
         return leak;
     }
 
-    double volume_per_child = remaining / node->child_count;
-    double total_leak = leak;
+    float volume_per_child = remaining / node->child_count;
+    float total_leak = leak;
 
     ChildNode *cn = node->children;
     while (cn)
@@ -73,7 +73,7 @@ double calculate_leaks_recursive(TreeNode *node, double incoming_volume)
     return total_leak;
 }
 
-int leaks_process(const char *input_file, const char *output_file, const char *plant_id)
+int leaks_process(char *input_file, char *output_file, char *plant_id)
 {
     FILE *fp = fopen(input_file, "r");
     if (fp == NULL)
@@ -84,7 +84,7 @@ int leaks_process(const char *input_file, const char *output_file, const char *p
 
     AVLNode *node_index = NULL;
     TreeNode *plant_root = NULL;
-    double plant_max_volume = 0.0;
+    float plant_max_volume = 0.0;
     int plant_found = 0;
 
     char line[1024];
@@ -234,7 +234,7 @@ int leaks_process(const char *input_file, const char *output_file, const char *p
             if (child_node != NULL)
                 continue;
 
-            double leak_pct = (strcmp(col5, "-") != 0) ? atof(col5) : 0.0;
+            float leak_pct = (strcmp(col5, "-") != 0) ? atof(col5) : 0.0;
             TreeNode *child = create_tree_node(col3, leak_pct);
             if (child == NULL)
                 continue;
@@ -247,11 +247,11 @@ int leaks_process(const char *input_file, const char *output_file, const char *p
         }
     }
 
-    double total_leaks = 0.0;
+    float total_leaks = 0.0;
 
     if (plant_root->child_count > 0)
     {
-        double volume_per_child = plant_max_volume / plant_root->child_count;
+        float volume_per_child = plant_max_volume / plant_root->child_count;
         ChildNode *cn = plant_root->children;
         while (cn)
         {
@@ -260,7 +260,7 @@ int leaks_process(const char *input_file, const char *output_file, const char *p
         }
     }
 
-    double total_leaks_mm3 = total_leaks / 1000000.0;
+    float total_leaks_mm3 = total_leaks / 1000000.0;
 
     FILE *out = fopen(output_file, "a");
     if (out == NULL)

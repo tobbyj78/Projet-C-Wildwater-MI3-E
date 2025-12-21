@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void free_plant_data(void *data)
+void free_plant_data(void *data)
 {
     if (data)
     {
@@ -13,7 +13,7 @@ static void free_plant_data(void *data)
     }
 }
 
-static int is_source(const char *id)
+int is_source(char *id)
 {
     return (strstr(id, "Source") != NULL ||
             strstr(id, "Well") != NULL ||
@@ -23,7 +23,7 @@ static int is_source(const char *id)
             strstr(id, "field") != NULL);
 }
 
-static int is_plant(const char *id)
+int is_plant(char *id)
 {
     return (strstr(id, "Plant") != NULL ||
             strstr(id, "Unit") != NULL ||
@@ -34,14 +34,14 @@ static int is_plant(const char *id)
 typedef struct
 {
     FILE *fp;
-    const char *mode;
+    char *mode;
 } WriteContext;
 
-static void write_plant(AVLNode *node, void *arg)
+void write_plant(AVLNode *node, void *arg)
 {
     WriteContext *ctx = (WriteContext *)arg;
     PlantData *pd = (PlantData *)node->data;
-    double value = 0.0;
+    float value = 0.0;
 
     if (strcmp(ctx->mode, "max") == 0)
     {
@@ -59,7 +59,7 @@ static void write_plant(AVLNode *node, void *arg)
     fprintf(ctx->fp, "%s;%.6f\n", pd->id, value);
 }
 
-int histo_process(const char *input_file, const char *output_file, const char *mode)
+int histo_process(char *input_file, char *output_file, char *mode)
 {
     FILE *fp = fopen(input_file, "r");
     if (fp == NULL)
@@ -121,9 +121,9 @@ int histo_process(const char *input_file, const char *output_file, const char *m
 
         if (strcmp(col1, "-") == 0 && is_source(col2) && is_plant(col3) && strcmp(col4, "-") != 0)
         {
-            double volume = atof(col4);
-            double leak_pct = (strcmp(col5, "-") != 0) ? atof(col5) : 0.0;
-            double real = volume * (1.0 - leak_pct / 100.0);
+            float volume = atof(col4);
+            float leak_pct = (strcmp(col5, "-") != 0) ? atof(col5) : 0.0;
+            float real = volume * (1.0 - leak_pct / 100.0);
 
             AVLNode *found = NULL;
             plants = avl_insert(plants, col3, NULL, &found);
